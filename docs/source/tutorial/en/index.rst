@@ -13,6 +13,8 @@ Get Started
 
 *  `Vectorization <vectorization.rst>`_
 
+*  `Pipeline <pipeline.rst>`_
+
 Main process
 ---------------
 
@@ -28,6 +30,7 @@ Main process
 
 * **Downstream** Apply the obtained vectors to downstream tasks.
 
+* `Pipeline <pipeline.rst>`_: Unify all components above and do inference for different tasks.
 Examples
 ---------
 
