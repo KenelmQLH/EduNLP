@@ -45,7 +45,7 @@ Pass your formatted question items and return the inference results.
 
 You can also use a specific model, whether from local or ModelHub
 
-* Specific a local model：
+* Specify a local model：
 
 ::
 
@@ -62,7 +62,7 @@ You can also use a specific model, whether from local or ModelHub
    item = "如图所示，则三角形ABC的面积是_。"
    processor(item)
 
-* Specific a ModelHub model：
+* Specify a ModelHub model：
 
 ::
 
