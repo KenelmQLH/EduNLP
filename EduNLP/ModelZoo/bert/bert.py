@@ -7,7 +7,7 @@ import json
 import os
 from ..base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
-from transformers import BertModel
+from transformers import BertModel, PretrainedConfig
 from typing import List, Optional
 from ..rnn.harnn import HAM
 
@@ -32,6 +32,7 @@ class BertForPropertyPrediction(BaseModel):
 
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
         self.config['architecture'] = 'BertForPropertyPrediction'
+        self.config = PretrainedConfig.from_dict(self.config)
 
     def forward(self,
                 input_ids=None,
@@ -52,10 +53,10 @@ class BertForPropertyPrediction(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 pretrained_model_dir=model_config['pretrained_model_dir'],
                 head_dropout=model_config.get("head_dropout", 0.5)
@@ -102,6 +103,7 @@ class BertForKnowledgePrediction(BaseModel):
 
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
         self.config['architecture'] = 'BertForKnowledgePrediction'
+        self.config = PretrainedConfig.from_dict(self.config)
 
     def forward(self,
                 input_ids=None,
@@ -128,10 +130,10 @@ class BertForKnowledgePrediction(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 pretrained_model_dir=model_config['pretrained_model_dir'],
                 head_dropout=model_config.get("head_dropout", 0.5),

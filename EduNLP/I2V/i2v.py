@@ -8,6 +8,7 @@ from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
+from EduData import get_data
 from ..Tokenizer import Tokenizer, get_tokenizer
 from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
@@ -43,8 +44,12 @@ class I2V(object):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> model_path = "examples/test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
-    >>> i2v = D2V("pure_text", "d2v", filepath=model_path, pretrained_t2v=False)
+    >>> model_dir = "examples/test_model/d2v"
+    >>> url, model_name, *args = get_pretrained_model_info('d2v_test_256')
+    >>> (); path = get_data(url, model_dir); () # doctest: +ELLIPSIS
+    (...)
+    >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
+    >>> i2v = D2V("pure_text", "d2v", filepath=path, pretrained_t2v=False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
 
@@ -154,8 +159,12 @@ class D2V(I2V):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> model_path = "examples/test_model/d2v/d2v_test_256/d2v_test_256.bin"
-    >>> i2v = D2V("pure_text","d2v",filepath=model_path, pretrained_t2v = False)
+    >>> model_dir = "examples/test_model/d2v"
+    >>> url, model_name, *args = get_pretrained_model_info('d2v_test_256')
+    >>> (); path = get_data(url, model_dir); () # doctest: +ELLIPSIS
+    (...)
+    >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
+    >>> i2v = D2V("pure_text","d2v",filepath=path, pretrained_t2v = False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
 
@@ -221,10 +230,10 @@ class W2V(I2V):
 
     Examples
     ---------
-    >>> (); i2v = get_pretrained_i2v("w2v_test_256", "examples/test_model/w2v"); () # doctest: +ELLIPSIS
+    >>> (); i2v = get_pretrained_i2v("w2v_test_256", "examples/test_model/w2v"); () # doctest: +SKIP
     (...)
-    >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
-    >>> item_vector # doctest: +ELLIPSIS
+    >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"]) # doctest: +SKIP
+    >>> item_vector # doctest: +SKIP
     [array([...], dtype=float32)]
 
     Returns
@@ -292,6 +301,7 @@ class Elmo(I2V):
     -------
     i2v model: Elmo
     """
+
     def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
                      *args, key=lambda x: x, **kwargs) -> tuple:
         """It is a function to switch item to vector. And before using the function, it is necessary to load model.
@@ -415,6 +425,7 @@ class DisenQ(I2V):
     -------
     i2v model: DisenQ
     """
+
     def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
                      *args, key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """
@@ -537,9 +548,9 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/d2v"); () # doctest: +ELLIPSIS
+    >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/d2v"); () # doctest: +SKIP
     (...)
-    >>> print(i2v(item))
+    >>> print(i2v(item)) # doctest: +SKIP
     ([array([ ...dtype=float32)], None)
     """
     pretrained_models = get_all_pretrained_models()

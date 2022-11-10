@@ -15,12 +15,6 @@ from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
-from transformers import is_apex_available
-
-os.environ["WANDB_DISABLED"] = "true"
-
-if is_apex_available():
-    from apex import amp
 
 
 def check_num(s):
@@ -64,13 +58,6 @@ def check_num(s):
             return is_num
 
 
-def list_to_onehot(item_list, item2index):
-    onehot = np.zeros(len(item2index)).astype(np.int64)
-    for c in item_list:
-        onehot[item2index[c]] = 1
-    return onehot
-
-
 def load_list_to_dict(path):
     with open(path, "rt", encoding="utf-8") as file:
         items = file.read().split('\n')
@@ -103,7 +90,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
     """
 
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text",
-                 add_specials: list = None, num_token="[NUM]", **argv):
+                 add_specials: list = None, num_token="[NUM]", **kwargs):
         """
         Parameters
         ----------
@@ -122,7 +109,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
         else:
             add_specials = [num_token] + add_specials
         super().__init__(vocab_path=vocab_path, max_length=max_length,
-                         tokenize_method=tokenize_method, add_specials=add_specials, **argv)
+                         tokenize_method=tokenize_method, add_specials=add_specials, **kwargs)
         self.num_token = num_token
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
@@ -207,7 +194,7 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
 
 class DisenQDataset(EduDataset):
     def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict,
-                 mode="train", concept_to_idx=None, **argv):
+                 mode="train", concept_to_idx=None, **kwargs):
         """
         Parameters
         ----------
@@ -216,7 +203,7 @@ class DisenQDataset(EduDataset):
         data_formation: dict
         max_length: int, optional, default=128
         """
-        # super(DisenQDataset, self).__init__(tokenizer=tokenizer, **argv)
+        # super(DisenQDataset, self).__init__(tokenizer=tokenizer, **kwargs)
         self.tokenizer = tokenizer
         self.concept_to_idx = concept_to_idx
         self.mode = mode
@@ -338,12 +325,13 @@ DEFAULT_TRAIN_PARAMS = {
 }
 
 
-def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, pretrained_dir: str = None,
-                    eval_items=None, tokenizer_params=None, data_params=None, model_params=None, train_params=None):
+def train_disenqnet(train_items: List[dict], output_dir: str, pretrained_dir: str = None,
+                    eval_items=None, tokenizer_params=None, data_params=None, model_params=None,
+                    train_params=None, w2v_params=None):
     """
     Parameters
     ----------
-    train_items : Union[List[dict], List[str]]
+    train_items : List[dict]
         _description_
     output_dir : str
         _description_
@@ -362,7 +350,7 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
     data_params = data_params if data_params is not None else {}
     model_params = model_params if model_params is not None else {}
     train_params = train_params if train_params is not None else {}
-
+    w2v_params = w2v_params if w2v_params is not None else {}
     default_data_formation = {
         "ques_content": "ques_content",
         "knowledge": "knowledge"
@@ -383,11 +371,8 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = DisenQTokenizer(**work_tokenizer_params)
         corpus_items = train_items
-        if isinstance(train_items[0], str):
-            tokenizer.set_vocab(corpus_items)
-        else:
-            tokenizer.set_vocab(corpus_items,
-                                key=lambda x: x[data_formation['ques_content']])
+        tokenizer.set_vocab(corpus_items,
+                            key=lambda x: x[data_formation['ques_content']])
 
     # training Configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
@@ -396,7 +381,7 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
         work_train_params.update(train_params if train_params else {})
     if model_params:
         if 'hidden_size' in model_params:
-            work_train_params['hidden_size'] = model_params['hidden']
+            work_train_params['hidden_size'] = model_params['hidden_size']
 
     # dataset configuration
     items = train_items + ([] if eval_items is None else eval_items)
@@ -405,13 +390,13 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
                                                                  data_formation,
                                                                  trim_min_count=work_train_params["trim_min"],
                                                                  embed_dim=work_train_params["hidden_size"],
-                                                                 w2v_params=None, silent=False)
+                                                                 w2v_params=w2v_params, silent=False)
     else:
         tokenizer, concept_to_idx, word2vec = preprocess_dataset(output_dir, tokenizer, items,
                                                                  data_formation,
                                                                  trim_min_count=work_train_params["trim_min"],
                                                                  embed_dim=work_train_params["hidden_size"],
-                                                                 w2v_params=None, silent=False)
+                                                                 w2v_params=w2v_params, silent=False)
     train_dataset = DisenQDataset(train_items, tokenizer, data_formation,
                                   mode="train", concept_to_idx=concept_to_idx)
     if eval_items:

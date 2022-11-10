@@ -65,9 +65,27 @@ class TestPretrainEmlo:
                 "no_cuda": not TEST_GPU,
             }
         )
+
+        # train with a pretrained model
+        str_items = [item["ques_content"] for item in standard_luna_data]
+        train_elmo(
+            str_items,
+            pretrained_model_dir,
+            pretrained_dir=pretrained_model_dir,
+            data_params={
+                "stem_key": None
+            },
+            train_params={
+                "num_train_epochs": 1,
+                "per_device_train_batch_size": 2,
+                "per_device_eval_batch_size": 2,
+                "no_cuda": not TEST_GPU,
+            }
+        )
         model = ElmoLM.from_pretrained(pretrained_model_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_model_dir)
-
+        model.save_pretrained(f"{pretrained_model_dir}/save")
+        tokenizer.save_pretrained(f"{pretrained_model_dir}/save")
         # TODO: need to handle inference for T2V for batch or single
         # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
         # model(**encodes)
@@ -92,14 +110,22 @@ class TestPretrainEmlo:
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
         }
+        # train without a pretrained model
+        train_elmo_for_property_prediction(
+            standard_luna_data,
+            pretrained_pp_dir,
+            train_params=train_params,
+            data_params=data_params
+        )
+        # train with a pretrained model
         train_elmo_for_property_prediction(
             standard_luna_data,
             pretrained_pp_dir,
             pretrained_dir=pretrained_model_dir,
 
-            # eval_items=standard_luna_data,
+            eval_items=standard_luna_data,
             train_params=train_params,
-            data_params=data_params
+            data_params=data_params,
         )
         model = ElmoLM.from_pretrained(pretrained_pp_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_pp_dir)
@@ -124,7 +150,7 @@ class TestPretrainEmlo:
             "label_key": "know_list"
         }
         train_params = {
-            "num_train_epochs": 3,
+            "num_train_epochs": 1,
             "per_device_train_batch_size": 2,
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
@@ -133,6 +159,15 @@ class TestPretrainEmlo:
             "num_classes_list": [10, 27, 963],
             "num_total_classes": 1000,
         }
+        # train without pretrained model
+        train_elmo_for_knowledge_prediction(
+            standard_luna_data,
+            pretrained_kp_dir,
+            train_params=train_params,
+            data_params=data_params,
+            model_params=model_params
+        )
+        # train with pretrained model
         train_elmo_for_knowledge_prediction(
             standard_luna_data,
             pretrained_kp_dir,
@@ -141,7 +176,7 @@ class TestPretrainEmlo:
             eval_items=standard_luna_data,
             train_params=train_params,
             data_params=data_params,
-            model_params=model_params
+            model_params=model_params,
         )
         model = ElmoLM.from_pretrained(pretrained_kp_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_kp_dir)

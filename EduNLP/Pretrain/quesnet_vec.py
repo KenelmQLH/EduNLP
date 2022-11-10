@@ -65,7 +65,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
 
     def __init__(self, vocab_path=None, meta_vocab_dir=None, img_dir: str = None,
                  max_length=250, tokenize_method="custom", symbol="mas", add_specials: list = None,
-                 meta: List[str] = None, img_token='<img>', unk_token="<unk>", pad_token="<pad>", **argv):
+                 meta: List[str] = None, img_token='<img>', unk_token="<unk>", pad_token="<pad>", **kwargs):
         """
         Parameters
         ----------
@@ -94,9 +94,9 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                 "skip_figure_formula": True
             }
         }
-        argv.update(self.tokenization_params)
+        kwargs.update(self.tokenization_params)
         super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method,
-                         add_specials=add_specials, unk_token=unk_token, pad_token=pad_token, symbol=symbol, **argv)
+                         add_specials=add_specials, unk_token=unk_token, pad_token=pad_token, symbol=symbol, **kwargs)
         if meta is None:
             meta = ['know_name']
         self.img_dir = img_dir
@@ -241,7 +241,8 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             can be the list of str, or list of dict
         key: function
             determine how to get the text of each item
-        trim_min_count
+        trim_min_count : int, optional
+            the lower bound number for adding a word into vocabulary, by default 1
         silent
         """
         token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
@@ -250,7 +251,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         self.itos['word'] = self.vocab.idx_to_token
 
     @classmethod
-    def from_pretrained(cls, tokenizer_config_dir, img_dir=None, **argv):
+    def from_pretrained(cls, tokenizer_config_dir, img_dir=None, **kwargs):
         """
         Parameters:
         -----------
@@ -264,7 +265,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         pretrained_vocab_path = os.path.join(tokenizer_config_dir, "vocab.txt")
         with open(tokenizer_config_path, "r", encoding="utf-8") as rf:
             tokenizer_config = json.load(rf)
-            tokenizer_config.update(argv)
+            tokenizer_config.update(kwargs)
             return cls(
                 vocab_path=pretrained_vocab_path,
                 meta_vocab_dir=tokenizer_config_dir,
@@ -313,7 +314,7 @@ def clip(v, low, high):
 class Lines:
     def __init__(self, filename, skip=0, preserve_newline=False):
         self.filename = filename
-        with open(filename) as f:
+        with open(filename, "r", encoding="utf-8") as f:
             self.length = len(f.readlines()) - skip
         assert self.length > 0, f'{filename} is empty. Or file length is less than skip length.'
         self.skip = skip
@@ -539,7 +540,7 @@ class EmbeddingDataset(Dataset):
         if self.data_type == 'image':
             return to_tensor(self.data[idx])
         elif self.data_type == 'meta':
-            return torch.tensor(self.data[idx])
+            return self.data[idx]
 
 
 def pretrain_iter(ques, batch_size):
@@ -630,7 +631,7 @@ def pretrain_quesnet(path, output_dir, img_dir=None, save_embs=False, train_para
     ... "know_name": "['代数', '集合', '集合的相等']"
     ... }]
     >>> tokenizer.set_vocab(items, key=lambda x: x['ques_content'], trim_min_count=1, silent=True)
-    >>> pretrain_quesnet('./data/quesnet_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
+    >>> pretrain_quesnet('./data/standard_luna_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
     """
     default_train_params = {
         # train params

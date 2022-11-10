@@ -77,6 +77,21 @@ class TestPretrainBert:
         encodes = tokenizer(items, lambda x: x['ques_content'])
         model(**encodes)
 
+        finetune_bert(
+            standard_luna_data,
+            pretrained_model_dir,
+            pretrained_model=pretrained_model_dir,
+            data_params={
+                "stem_key": "ques_content",
+            },
+            train_params={
+                "num_train_epochs": 1,
+                "per_device_train_batch_size": 2,
+                "save_steps": 500,
+                "no_cuda": not TEST_GPU,
+            }
+        )
+
     def test_train_pp(self, standard_luna_data, pretrained_pp_dir, pretrained_model_dir):
         data_params = {
             "stem_key": "ques_content",
@@ -89,11 +104,19 @@ class TestPretrainBert:
             "no_cuda": not TEST_GPU,
         }
         train_items = standard_luna_data
+        # train without eval_items
         finetune_bert_for_property_prediction(
             train_items,
             pretrained_pp_dir,
             pretrained_model=pretrained_model_dir,
-
+            train_params=train_params,
+            data_params=data_params
+        )
+        # train with eval_items
+        finetune_bert_for_property_prediction(
+            train_items,
+            pretrained_pp_dir,
+            pretrained_model=pretrained_model_dir,
             eval_items=train_items,
             train_params=train_params,
             data_params=data_params
@@ -121,11 +144,20 @@ class TestPretrainBert:
             "num_total_classes": 1000,
         }
         train_items = standard_luna_data
+        # train without eval_items
         finetune_bert_for_knowledge_prediction(
             train_items,
             pretrained_kp_dir,
             pretrained_model=pretrained_model_dir,
-
+            train_params=train_params,
+            data_params=data_params,
+            model_params=model_params
+        )
+        # train with eval_items
+        finetune_bert_for_knowledge_prediction(
+            train_items,
+            pretrained_kp_dir,
+            pretrained_model=pretrained_model_dir,
             eval_items=train_items,
             train_params=train_params,
             data_params=data_params,
