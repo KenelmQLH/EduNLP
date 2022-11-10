@@ -120,6 +120,7 @@ Examples：
 Examples：
 
 ::
+
    from EduNLP.I2V import D2V
    
    model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
