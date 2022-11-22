@@ -124,7 +124,7 @@ Examples：
    from EduNLP.I2V import D2V
    
    model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
-   i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
+   i2v = D2V("text", "d2v", filepath=model_path, pretrained_t2v=False)
 
 
 更多模型训练案例
