@@ -16,14 +16,14 @@ class LatexFormulaSegment(str):
 
 
 class Figure(object):
-    """decode figure which has been encode by base64"""
+    """Decode figure which has been encode by base64"""
     def __init__(self, is_base64=False):
         self.base64 = is_base64
         self.figure = None
 
     @classmethod
     def base64_to_numpy(cls, figure: str):
-        """Creat a arrary in a designated buffer"""
+        """Creat an array in a designated buffer"""
         return np.frombuffer(base64.b64decode(figure), dtype=np.uint8)
 
 
@@ -86,12 +86,22 @@ class SegmentList(object):
     ----------
     item: str
     figures: dict
+    
+    Returns
+    ----------
+    None
+        This function doesn't have return value.
 
     Examples
     --------
-    >>> test_item = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
+    >>> test_item = "如图，$\bigtriangleup ABC$围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"
     >>> SegmentList(test_item)
-    ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
+    ['如图，', '\x08igtriangleup ABC', '围成的区域记为', 'I', ',黑色部分记为', 'II', ', 其余部分记为', 'III', '.在整个图形中随机取一点，此点取自', 'I,II,III', '的概率分别记为', 'p_1,p_2,p_3', ',则', '\\SIFChoice', \FigureID{1}]
+    >>> print(seg.formula_segments)
+    ['\x08igtriangleup ABC', 'I', 'II', 'III', 'I,II,III', 'p_1,p_2,p_3']
+    >>> print(seg.text_segments)
+    ['如图，', '围成的区域记为', ',黑色部分记为', ', 其余部分记为', '.在整个图形中随机取一点，此点取自', '的概率分别记为', ',则']
+    
     """
     def __init__(self, item, figures: dict = None):
         self._segments = []
@@ -197,7 +207,7 @@ class SegmentList(object):
 
         Parameters
         ----------
-        to_symbolize:
+        to_symbolize: str
             "t": text
             "f": formula
             "g": figure
@@ -207,6 +217,8 @@ class SegmentList(object):
 
         Returns
         -------
+        None
+            This function doesn't have return value.
 
         """
         if "t" in to_symbolize:
@@ -229,7 +241,7 @@ class SegmentList(object):
                 self.to_symbol(idx, Symbol(SEP_SYMBOL))
 
     @contextmanager
-    def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+    def filter(self, drop: (set | str) = "", keep: (set | str) = "*"):
         """
         Output special element list selective.Drop means not show.Keep means show.
 
@@ -283,7 +295,7 @@ def seg(item, figures=None, symbol=None):
 
     Returns
     -------
-    list
+    segments: list
         segmented item
 
     Examples
