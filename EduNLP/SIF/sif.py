@@ -96,7 +96,7 @@ def to_sif(item, check_formula=True, parser: Parser = None):
         return is_sif(item, check_formula, return_parser=True)[1].text
 
 
-def sif4sci(item: str, figures: (dict | bool) = None, mode: int = 2, symbol: str = None, tokenization=True,
+def sif4sci(item: str, figures: (dict , bool) = None, mode: int = 2, symbol: str = None, tokenization=True,
             tokenization_params=None, errors="raise"):
     r"""
 
