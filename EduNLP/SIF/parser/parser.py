@@ -46,7 +46,7 @@ class Parser:
                           '[', ']', '—']
 
     def is_number(self, uchar):
-        """判断一个unicode是否是数字"""
+        """Determine whether a unicode is a number (unicode from 0x0030 to 0x0039)"""
         if u'\u0030' <= uchar <= u'\u0039':
             # print(uchar, ord(uchar))(u'\u0030' <= uchar <= u'\u0039')
             return True
@@ -54,14 +54,14 @@ class Parser:
             return False
 
     def is_alphabet(self, uchar):
-        """判断一个unicode是否是英文字母"""
+        """Determine whether a Unicode is an English letter (unicode from 0x0041 to 0x005a, 0x0061 to 0x007a)"""
         if (u'\u0041' <= uchar <= u'\u005a') or (u'\u0061' <= uchar <= u'\u007a'):
             return True
         else:
             return False
 
     def is_chinese(self, uchar):
-        """判断一个unicode是否是汉字"""
+        """Determine whether a unicode is a Chinese character (unicode from 0x4e00 to 0x9fa5)"""
         if u'\u4e00' <= uchar <= u'\u9fa5':
             return True
         else:
@@ -95,7 +95,7 @@ class Parser:
         return True
 
     def call_error(self):
-        """语法解析函数"""
+        """ Latex syntax parsing functions"""
         # print('ERROR::position is >>> ',self.head)
         # print('ERROR::match is >>>', self.text[self.head])
         self.error_postion = self.head
@@ -108,10 +108,14 @@ class Parser:
 
         Parameters
         ----------
-
+        None
+            This function doesn't need parameters.
+            
         Returns
         -------
-        elements:chinese,alphabet,number,ch_pun_list,en_pun_list,latex formula
+        tokenID: int
+            Single element, like Chinese, alphabet, number, ch_punctuation, en_punctuation and latex formula.
+            
 
         """
         if self.head >= len(self.text):
@@ -259,17 +263,13 @@ class Parser:
             return self.error
 
     def next_token(self):
-        #         print('call next_token')
-        #         if self.error_flag:
-        #             return
+        """Get the next token and set it to the head."""
         self.lookahead = self.get_token()
         if self.error_flag:
             return
 
     def match(self, terminal):
-        #         print('call match')
-        # if self.error_flag:
-        #     return
+        """Match the next token"""
         if self.lookahead == terminal:
             self.next_token()
             if self.error_flag:
@@ -279,20 +279,16 @@ class Parser:
         #     self.call_error()
 
     def txt(self):
-        #         print('call txt')
-        #         if self.error_flag:
-        #             return
+        """Match the text. Including punctuation marks, Chinese charactors and latex formular."""
         self.lookahead = self.get_token()
         if self.error_flag:
             return
         if self.lookahead == self.character or self.lookahead == self.en_pun or \
-                self.lookahead == self.ch_pun or self.lookahead == self.latex:
+           self.lookahead == self.ch_pun or self.lookahead == self.latex:
             self.match(self.lookahead)
 
     def txt_list(self):
-        #         print('call txt_list')
-        #         if self.error_flag:
-        #             return
+        """Match the text continuously"""
         self.txt()
         if self.error_flag:
             return
@@ -300,9 +296,6 @@ class Parser:
             self.txt_list()
 
     def description(self):
-        #         print('call description')
-        #         if self.error_flag:
-        #             return
         self.txt_list()
         if self.error_flag:
             return
@@ -315,9 +308,13 @@ class Parser:
 
         Parameters
         ----------
+        None
+            This function doesn't need parameters.
 
         Returns
         ----------
+        None
+            This function doesn't have return value.
 
         Examples
         --------
