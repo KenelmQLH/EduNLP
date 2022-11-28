@@ -241,7 +241,7 @@ class SegmentList(object):
                 self.to_symbol(idx, Symbol(SEP_SYMBOL))
 
     @contextmanager
-    def filter(self, drop: (set | str) = "", keep: (set | str) = "*"):
+    def filter(self, drop: (set , str) = "", keep: (set , str) = "*"):
         """
         Output special element list selective.Drop means not show.Keep means show.
 
