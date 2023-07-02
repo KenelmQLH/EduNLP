@@ -427,6 +427,10 @@ def train_disenqnet(train_items: List[dict], output_dir: str, pretrained_dir: st
         work_model_params.update(model_params if model_params else {})
         model = DisenQNetForPreTraining(**work_model_params)
 
+    # Change the gamma here
+    n = len(train_items) / work_train_params["per_device_train_batch_size"]
+    work_train_params["gamma"] = work_train_params["gamma"] ** (1/n)
+
     # Train
     work_args = DisenQTrainingArguments(**work_train_params)
     trainer = DisenQTrainer(
